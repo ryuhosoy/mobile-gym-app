@@ -1,66 +1,113 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, Image } from 'react-native';
-import { Link } from 'expo-router';
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from "react-native";
+import { Link } from "expo-router";
+import * as Location from 'expo-location';
 
-// サンプルデータ（実際のアプリでは、APIから取得することを想定）
-const gyms = [
-  {
-    id: '1',
-    name: 'フィットネスジムA',
-    address: '東京都渋谷区○○1-1-1',
-    rating: 4.5,
-    price: '¥7,000~/月',
-    image: '',
-    features: ['24時間営業', 'マシン充実', 'シャワー完備']
-  },
-  {
-    id: '2',
-    name: 'スポーツジムB',
-    address: '東京都新宿区××2-2-2',
-    rating: 4.2,
-    price: '¥8,500~/月',
-    image: '',
-    features: ['プール完備', 'ヨガレッスン', 'パーソナルトレーニング']
-  },
-  // ... 他のジムデータ
-];
+interface Gym {
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  rating?: number;
+  user_ratings_total?: number;
+  photos?: Array<{
+    photo_reference: string;
+  }>;
+  opening_hours?: {
+    open_now: boolean;
+  };
+}
 
 export default function GymSearchScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredGyms, setFilteredGyms] = useState(gyms);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [gyms, setGyms] = useState<Gym[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSearch = (text: string) => {
-    setSearchQuery(text);
-    const filtered = gyms.filter(gym => 
-      gym.name.toLowerCase().includes(text.toLowerCase()) ||
-      gym.address.toLowerCase().includes(text.toLowerCase())
-    );
-    setFilteredGyms(filtered);
+  useEffect(() => {
+    searchNearbyGyms();
+  }, []);
+
+  const searchNearbyGyms = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('位置情報の許可が必要です');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const params = {
+        location: `${location.coords.latitude},${location.coords.longitude}`,
+        radius: "5000",
+        type: "gym",
+        language: "ja",
+        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg"
+      };
+
+      const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${url}?${queryString}`);
+      const data = await response.json();
+      
+      if (data.status === "OK") {
+        setGyms(data.results);
+      }
+    } catch (error) {
+      console.error("ジムの検索中にエラーが発生しました:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const renderGymItem = ({ item }: { item: typeof gyms[0] }) => (
-    <Link href={`/gym/${item.id}`} asChild>
+  const handleSearch = async (text: string) => {
+    setSearchQuery(text);
+    setLoading(true);
+
+    try {
+      const params = {
+        query: `${text} ジム`,
+        language: "ja",
+        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg"
+      };
+
+      const url = "https://maps.googleapis.com/maps/api/place/textsearch/json";
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${url}?${queryString}`);
+      const data = await response.json();
+
+      if (data.status === "OK") {
+        setGyms(data.results);
+      }
+    } catch (error) {
+      console.error("検索中にエラーが発生しました:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderGymItem = ({ item }: { item: Gym }) => (
+    <Link href={`/gym/${item.place_id}`} asChild>
       <TouchableOpacity style={styles.gymCard}>
-        <View style={styles.gymImageContainer}>
-          {/* <Image
-            source={{ uri: item.image }}
-            style={styles.gymImage}
-            defaultSource={require('../assets/images/placeholder.png')}
-          /> */}
-        </View>
         <View style={styles.gymInfo}>
           <Text style={styles.gymName}>{item.name}</Text>
-          <Text style={styles.gymAddress}>{item.address}</Text>
+          <Text style={styles.gymAddress}>{item.formatted_address}</Text>
           <View style={styles.ratingContainer}>
-            <Text style={styles.rating}>★ {item.rating}</Text>
-            <Text style={styles.price}>{item.price}</Text>
-          </View>
-          <View style={styles.featuresContainer}>
-            {item.features.map((feature, index) => (
-              <View key={index} style={styles.featureTag}>
-                <Text style={styles.featureText}>{feature}</Text>
-              </View>
-            ))}
+            {item.rating && (
+              <Text style={styles.rating}>
+                ★ {item.rating.toFixed(1)} ({item.user_ratings_total}件)
+              </Text>
+            )}
+            <Text style={styles.openStatus}>
+              {item.opening_hours?.open_now ? "営業中" : "営業時間外"}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -72,17 +119,21 @@ export default function GymSearchScreen() {
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="ジム名や場所で検索"
+          placeholder="地域名やジム名で検索"
           value={searchQuery}
           onChangeText={handleSearch}
         />
       </View>
-      <FlatList
-        data={filteredGyms}
-        renderItem={renderGymItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-      />
+      {loading ? (
+        <ActivityIndicator style={styles.loading} size="large" color="#6B4DE6" />
+      ) : (
+        <FlatList
+          data={gyms}
+          renderItem={renderGymItem}
+          keyExtractor={(item) => item.place_id}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
     </View>
   );
 }
@@ -90,12 +141,12 @@ export default function GymSearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   searchContainer: {
     padding: 15,
-    backgroundColor: '#FFF',
-    shadowColor: '#000',
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -103,73 +154,52 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     height: 40,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
     borderRadius: 20,
     paddingHorizontal: 15,
     fontSize: 16,
+  },
+  loading: {
+    marginTop: 20,
   },
   listContainer: {
     padding: 15,
   },
   gymCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderRadius: 12,
     marginBottom: 15,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-  },
-  gymImageContainer: {
-    height: 150,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    overflow: 'hidden',
-  },
-  gymImage: {
-    width: '100%',
-    height: '100%',
   },
   gymInfo: {
     padding: 15,
   },
   gymName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   gymAddress: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   ratingContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   rating: {
-    color: '#FFB100',
-    fontWeight: 'bold',
+    color: "#FFB100",
+    fontWeight: "bold",
   },
-  price: {
-    color: '#2E7D32',
-    fontWeight: 'bold',
+  openStatus: {
+    fontSize: 14,
+    color: "#4CAF50",
+    fontWeight: "bold",
   },
-  featuresContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  featureTag: {
-    backgroundColor: '#E3F2FD',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  featureText: {
-    fontSize: 12,
-    color: '#1976D2',
-  },
-}); 
+});

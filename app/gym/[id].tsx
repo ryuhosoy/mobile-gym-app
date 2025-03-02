@@ -1,73 +1,121 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
-// 実際のアプリではAPIから取得
-const gymDetails = {
-  id: '1',
-  name: 'フィットネスジムA',
-  address: '東京都渋谷区○○1-1-1',
-  rating: 4.5,
-  price: '¥7,000~/月',
-  image: '',
-  features: ['24時間営業', 'マシン充実', 'シャワー完備'],
-  description: '最新のマシンを完備した24時間営業のフィットネスジム。初心者から上級者まで対応可能なトレーナーが常駐しています。',
-  facilities: ['ウェイトマシン', 'カーディオマシン', 'フリーウェイト', 'シャワールーム', 'ロッカー', '駐車場'],
-  businessHours: '24時間',
-  phone: '03-xxxx-xxxx',
-  website: '',
-};
+interface GymDetails {
+  name: string;
+  formatted_address: string;
+  rating?: number;
+  user_ratings_total?: number;
+  formatted_phone_number?: string;
+  website?: string;
+  opening_hours?: {
+    weekday_text: string[];
+    open_now: boolean;
+  };
+}
 
 export default function GymDetailScreen() {
   const { id } = useLocalSearchParams();
+  const [details, setDetails] = useState<GymDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGymDetails();
+  }, [id]);
+
+  const fetchGymDetails = async () => {
+    try {
+      const params = {
+        place_id: id as string,
+        fields: 'name,formatted_address,rating,user_ratings_total,formatted_phone_number,website,opening_hours',
+        language: 'ja',
+        key: 'AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg'
+      };
+
+      const url = 'https://maps.googleapis.com/maps/api/place/details/json';
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${url}?${queryString}`);
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        setDetails(data.result);
+      }
+    } catch (error) {
+      console.error('詳細情報の取得に失敗しました:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCall = () => {
-    Linking.openURL(`tel:${gymDetails.phone}`);
+    if (details?.formatted_phone_number) {
+      Linking.openURL(`tel:${details.formatted_phone_number}`);
+    }
   };
 
   const handleWebsite = () => {
-    Linking.openURL(gymDetails.website);
+    if (details?.website) {
+      Linking.openURL(details.website);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6B4DE6" />
+      </View>
+    );
+  }
+
+  if (!details) {
+    return (
+      <View style={styles.container}>
+        <Text>情報を取得できませんでした</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
-      {/* <Image
-        source={{ uri: gymDetails.image }}
-        style={styles.image}
-        defaultSource={require('../../../assets/gym-placeholder.png')}
-      /> */}
-      
       <View style={styles.contentContainer}>
-        <Text style={styles.name}>{gymDetails.name}</Text>
-        <Text style={styles.address}>{gymDetails.address}</Text>
+        <Text style={styles.name}>{details.name}</Text>
+        <Text style={styles.address}>{details.formatted_address}</Text>
         
-        <View style={styles.ratingPrice}>
-          <Text style={styles.rating}>★ {gymDetails.rating}</Text>
-          <Text style={styles.price}>{gymDetails.price}</Text>
-        </View>
+        {details.rating && (
+          <View style={styles.ratingContainer}>
+            <Text style={styles.rating}>
+              ★ {details.rating.toFixed(1)} ({details.user_ratings_total}件の評価)
+            </Text>
+            <Text style={styles.openStatus}>
+              {details.opening_hours?.open_now ? "営業中" : "営業時間外"}
+            </Text>
+          </View>
+        )}
 
-        <Text style={styles.sectionTitle}>施設について</Text>
-        <Text style={styles.description}>{gymDetails.description}</Text>
-
-        <Text style={styles.sectionTitle}>設備</Text>
-        <View style={styles.facilitiesContainer}>
-          {gymDetails.facilities.map((facility, index) => (
-            <View key={index} style={styles.facilityTag}>
-              <Text style={styles.facilityText}>{facility}</Text>
-            </View>
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>営業時間</Text>
-        <Text style={styles.info}>{gymDetails.businessHours}</Text>
+        {details.opening_hours?.weekday_text && (
+          <>
+            <Text style={styles.sectionTitle}>営業時間</Text>
+            {details.opening_hours.weekday_text.map((text, index) => (
+              <Text key={index} style={styles.info}>{text}</Text>
+            ))}
+          </>
+        )}
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handleCall}>
-            <Text style={styles.buttonText}>電話する</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.websiteButton]} onPress={handleWebsite}>
-            <Text style={styles.buttonText}>ウェブサイトを見る</Text>
-          </TouchableOpacity>
+          {details.formatted_phone_number && (
+            <TouchableOpacity style={styles.button} onPress={handleCall}>
+              <Text style={styles.buttonText}>電話する</Text>
+            </TouchableOpacity>
+          )}
+          {details.website && (
+            <TouchableOpacity 
+              style={[styles.button, styles.websiteButton]} 
+              onPress={handleWebsite}
+            >
+              <Text style={styles.buttonText}>ウェブサイトを見る</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -75,13 +123,14 @@ export default function GymDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFF',
-  },
-  image: {
-    width: '100%',
-    height: 250,
   },
   contentContainer: {
     padding: 20,
@@ -96,9 +145,10 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 12,
   },
-  ratingPrice: {
+  ratingContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 20,
   },
   rating: {
@@ -106,9 +156,9 @@ const styles = StyleSheet.create({
     color: '#FFB100',
     fontWeight: 'bold',
   },
-  price: {
-    fontSize: 16,
-    color: '#2E7D32',
+  openStatus: {
+    fontSize: 14,
+    color: '#4CAF50',
     fontWeight: 'bold',
   },
   sectionTitle: {
@@ -117,30 +167,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#333',
-  },
-  facilitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
-  },
-  facilityTag: {
-    backgroundColor: '#E3F2FD',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  facilityText: {
-    fontSize: 14,
-    color: '#1976D2',
-  },
   info: {
     fontSize: 16,
     color: '#333',
+    marginBottom: 5,
   },
   buttonContainer: {
     flexDirection: 'row',
