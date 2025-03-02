@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 import * as Location from 'expo-location';
+import StarRating from './components/StarRating';
 
 interface Gym {
   place_id: string;
@@ -101,9 +102,10 @@ export default function GymSearchScreen() {
           <Text style={styles.gymAddress}>{item.formatted_address}</Text>
           <View style={styles.ratingContainer}>
             {item.rating && (
-              <Text style={styles.rating}>
-                ★ {item.rating.toFixed(1)} ({item.user_ratings_total}件)
-              </Text>
+              <StarRating 
+                rating={item.rating} 
+                totalReviews={item.user_ratings_total} 
+              />
             )}
             <Text style={styles.openStatus}>
               {item.opening_hours?.open_now ? "営業中" : "営業時間外"}
@@ -192,10 +194,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  rating: {
-    color: "#FFB100",
-    fontWeight: "bold",
   },
   openStatus: {
     fontSize: 14,

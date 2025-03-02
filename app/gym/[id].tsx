@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import StarRating from '../components/StarRating';
 
 interface GymDetails {
   name: string;
@@ -9,7 +10,7 @@ interface GymDetails {
   user_ratings_total?: number;
   formatted_phone_number?: string;
   website?: string;
-  opening_hours?: {
+  opening_hours?: { 
     weekday_text: string[];
     open_now: boolean;
   };
@@ -84,9 +85,10 @@ export default function GymDetailScreen() {
         
         {details.rating && (
           <View style={styles.ratingContainer}>
-            <Text style={styles.rating}>
-              ★ {details.rating.toFixed(1)} ({details.user_ratings_total}件の評価)
-            </Text>
+            <StarRating 
+              rating={details.rating} 
+              totalReviews={details.user_ratings_total} 
+            />
             <Text style={styles.openStatus}>
               {details.opening_hours?.open_now ? "営業中" : "営業時間外"}
             </Text>
