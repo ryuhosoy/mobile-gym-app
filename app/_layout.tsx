@@ -32,7 +32,7 @@ export default function RootLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: '今日の運勢',
+            title: '',
             headerStyle: {
               backgroundColor: '#6B4DE6',
             },

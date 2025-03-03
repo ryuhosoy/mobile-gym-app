@@ -40,6 +40,7 @@ export default function GymDetailScreen() {
       const data = await response.json();
 
       if (data.status === 'OK') {
+        console.log("detail data", data);
         setDetails(data.result);
       }
     } catch (error) {
