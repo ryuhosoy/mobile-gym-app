@@ -9,10 +9,12 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  Dimensions,
 } from "react-native";
 import { Link } from "expo-router";
 import * as Location from 'expo-location';
 import StarRating from './components/StarRating';
+import MapView, { Marker } from 'react-native-maps';
   
 interface Gym {
   place_id: string;
@@ -31,7 +33,7 @@ interface Gym {
       lat: number;
       lng: number;
     };
-};
+  };
 }
 
 type SortOption = '距離' | '評価' | 'レビュー数';
@@ -46,6 +48,7 @@ export default function GymSearchScreen() {
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterOption[]>(['全て']);
+  const [showMap, setShowMap] = useState(false);
 
   console.log("activeFilters", activeFilters);
 
@@ -117,7 +120,6 @@ export default function GymSearchScreen() {
   };
 
   const handleFilter = (option: FilterOption) => {
-    // console.log("handleFilter", option); ok
     if (option === '全て') {
       setActiveFilters(['全て']);
     } else {
@@ -127,9 +129,6 @@ export default function GymSearchScreen() {
       } else {
         setActiveFilters([...newFilters, option]);
       }
-      // if (newFilters.length === 0) {
-      //   setActiveFilters(['全て']);
-      // }
     }
   };
 
@@ -187,6 +186,7 @@ export default function GymSearchScreen() {
 
       if (data.status === "OK") {
         const filteredGyms = applyFilters(data.results);
+        console.log("filteredGyms", filteredGyms);
         setGyms(filteredGyms);
       }
     } catch (error) {
@@ -240,6 +240,15 @@ export default function GymSearchScreen() {
           <Text style={styles.sortButtonText}>{currentSort}順</Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        style={styles.mapToggleButton}
+        onPress={() => setShowMap(!showMap)}
+      >
+        <Text style={styles.mapToggleButtonText}>
+          {showMap ? 'リスト表示' : '地図表示'}
+        </Text>
+      </TouchableOpacity>
 
       <Modal
         animationType="slide"
@@ -324,6 +333,40 @@ export default function GymSearchScreen() {
 
       {loading ? (
         <ActivityIndicator style={styles.loading} size="large" color="#6B4DE6" />
+      ) : showMap ? (
+        <View style={styles.mapContainer}>
+          {userLocation && (
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: userLocation.coords.latitude,
+                longitude: userLocation.coords.longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }}
+            >
+              <Marker
+                coordinate={{
+                  latitude: userLocation.coords.latitude,
+                  longitude: userLocation.coords.longitude,
+                }}
+                title="現在地"
+                pinColor="blue"
+              />
+              {gyms.map((gym) => (
+                <Marker
+                  key={gym.place_id}
+                  coordinate={{
+                    latitude: gym.geometry.location.lat,
+                    longitude: gym.geometry.location.lng,
+                  }}
+                  title={gym.name}
+                  description={gym.formatted_address}
+                />
+              ))}
+            </MapView>
+          )}
+        </View>
       ) : (
         <FlatList
           data={gyms}
@@ -490,6 +533,31 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  mapContainer: {
+    flex: 1,
+  },
+  map: {
+    width: Dimensions.get('window').width,
+    height: '100%',
+  },
+  mapToggleButton: {
+    position: 'absolute',
+    right: 15,
+    bottom: 30,
+    backgroundColor: '#6B4DE6',
+    padding: 15,
+    borderRadius: 25,
+    zIndex: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  mapToggleButtonText: {
+    color: '#FFF',
     fontWeight: 'bold',
   },
 });
