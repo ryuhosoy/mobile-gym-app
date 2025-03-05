@@ -14,7 +14,7 @@ import {
 import { Link } from "expo-router";
 import * as Location from 'expo-location';
 import StarRating from './components/StarRating';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
   
 interface Gym {
   place_id: string;
@@ -49,6 +49,7 @@ export default function GymSearchScreen() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterOption[]>(['全て']);
   const [showMap, setShowMap] = useState(false);
+  const mapRef = React.useRef<MapView>(null);
 
   console.log("activeFilters", activeFilters);
 
@@ -218,26 +219,47 @@ export default function GymSearchScreen() {
     </Link>
   );
 
+  const moveToCurrentLocation = () => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: userLocation.coords.latitude,
+        longitude: userLocation.coords.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      }, 1000); // 1000msかけてアニメーション
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            showMap && styles.searchInputDisabled
+          ]}
           placeholder="地域名やジム名で検索"
           value={searchQuery}
           onChangeText={handleSearch}
+          editable={!showMap}
         />
         <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setFilterModalVisible(true)}
+          disabled={showMap}
         >
-          <Text style={styles.filterButtonText}>絞込み</Text>
+          <Text style={[styles.filterButtonText, showMap && styles.buttonTextDisabled]}>
+            絞込み
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.sortButton}
+          style={[styles.sortButton, showMap && styles.buttonDisabled]}
           onPress={() => setSortModalVisible(true)}
+          disabled={showMap}
         >
-          <Text style={styles.sortButtonText}>{currentSort}順</Text>
+          <Text style={[styles.sortButtonText, showMap && styles.buttonTextDisabled]}>
+            {currentSort}順
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -246,7 +268,7 @@ export default function GymSearchScreen() {
         onPress={() => setShowMap(!showMap)}
       >
         <Text style={styles.mapToggleButtonText}>
-          {showMap ? 'リスト表示' : '地図表示'}
+          {showMap ? "リスト表示" : "マップ表示"}
         </Text>
       </TouchableOpacity>
 
@@ -334,17 +356,18 @@ export default function GymSearchScreen() {
       {loading ? (
         <ActivityIndicator style={styles.loading} size="large" color="#6B4DE6" />
       ) : showMap ? (
-        <View style={styles.mapContainer}>
-          {userLocation && (
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: userLocation.coords.latitude,
-                longitude: userLocation.coords.longitude,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
-              }}
-            >
+        <>
+          <MapView
+            ref={mapRef}
+            style={styles.map}
+            initialRegion={{
+              latitude: userLocation?.coords.latitude || 35.6812,
+              longitude: userLocation?.coords.longitude || 139.7671,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
+            }}
+          >
+            {userLocation && (
               <Marker
                 coordinate={{
                   latitude: userLocation.coords.latitude,
@@ -353,20 +376,27 @@ export default function GymSearchScreen() {
                 title="現在地"
                 pinColor="blue"
               />
-              {gyms.map((gym) => (
-                <Marker
-                  key={gym.place_id}
-                  coordinate={{
-                    latitude: gym.geometry.location.lat,
-                    longitude: gym.geometry.location.lng,
-                  }}
-                  title={gym.name}
-                  description={gym.formatted_address}
-                />
-              ))}
-            </MapView>
-          )}
-        </View>
+            )}
+            {gyms.map((gym) => (
+              <Marker
+                key={gym.place_id}
+                coordinate={{
+                  latitude: gym.geometry.location.lat,
+                  longitude: gym.geometry.location.lng,
+                }}
+                title={gym.name}
+                description={gym.formatted_address}
+              />
+            ))}
+          </MapView>
+          
+          <TouchableOpacity
+            style={styles.currentLocationButton}
+            onPress={moveToCurrentLocation}
+          >
+            <Text style={styles.currentLocationButtonText}>現在地へ</Text>
+          </TouchableOpacity>
+        </>
       ) : (
         <FlatList
           data={gyms}
@@ -558,6 +588,33 @@ const styles = StyleSheet.create({
   },
   mapToggleButtonText: {
     color: '#FFF',
+    fontWeight: 'bold',
+  },
+  searchInputDisabled: {
+    backgroundColor: '#E0E0E0',
+    color: '#999',
+  },
+  buttonDisabled: {
+    backgroundColor: '#D1D1D1',
+  },
+  buttonTextDisabled: {
+    color: '#999',
+  },
+  currentLocationButton: {
+    position: 'absolute',
+    right: 15,
+    bottom: 90, // mapToggleButtonの上に配置
+    backgroundColor: '#FFF',
+    padding: 12,
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  currentLocationButtonText: {
+    color: '#6B4DE6',
     fontWeight: 'bold',
   },
 });
