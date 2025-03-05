@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Linking, ActivityIndicator, Dimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import StarRating from '../components/StarRating';
+import MapView, { Marker } from 'react-native-maps';
 
 interface GymDetails {
   name: string;
@@ -13,6 +14,12 @@ interface GymDetails {
   opening_hours?: { 
     weekday_text: string[];
     open_now: boolean;
+  };
+  geometry?: {
+    location: {
+      lat: number;
+      lng: number;
+    };
   };
 }
 
@@ -29,7 +36,7 @@ export default function GymDetailScreen() {
     try {
       const params = {
         place_id: id as string,
-        fields: 'name,formatted_address,rating,user_ratings_total,formatted_phone_number,website,opening_hours',
+        fields: 'name,formatted_address,rating,user_ratings_total,formatted_phone_number,website,opening_hours,geometry',
         language: 'ja',
         key: 'AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg'
       };
@@ -83,6 +90,29 @@ export default function GymDetailScreen() {
       <View style={styles.contentContainer}>
         <Text style={styles.name}>{details.name}</Text>
         <Text style={styles.address}>{details.formatted_address}</Text>
+        
+        {details.geometry && (
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: details.geometry.location.lat,
+                longitude: details.geometry.location.lng,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.005,
+              }}
+            >
+              <Marker
+                coordinate={{
+                  latitude: details.geometry.location.lat,
+                  longitude: details.geometry.location.lng,
+                }}
+                title={details.name}
+                description={details.formatted_address}
+              />
+            </MapView>
+          </View>
+        )}
         
         {details.rating && (
           <View style={styles.ratingContainer}>
@@ -195,5 +225,20 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  mapContainer: {
+    height: 200,
+    marginVertical: 15,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
   },
 }); 
