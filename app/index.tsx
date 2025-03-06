@@ -15,7 +15,8 @@ import { Link } from "expo-router";
 import * as Location from 'expo-location';
 import StarRating from './components/StarRating';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-  
+import { useLocation } from './contexts/LocationContext';
+
 interface Gym {
   place_id: string;
   name: string;
@@ -40,12 +41,12 @@ type SortOption = '距離' | '評価' | 'レビュー数';
 type FilterOption = '全て' | '営業中' | '高評価' | 'レビュー多数';
 
 export default function GymSearchScreen() {
+  const { userLocation } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [gyms, setGyms] = useState<Gym[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>('距離');
-  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterOption[]>(['全て']);
   const [showMap, setShowMap] = useState(false);
@@ -142,7 +143,6 @@ export default function GymSearchScreen() {
       }
 
       const location = await Location.getCurrentPositionAsync({});
-      setUserLocation(location);
       
       const params = {
         location: `${location.coords.latitude},${location.coords.longitude}`,
