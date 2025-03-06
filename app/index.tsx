@@ -12,10 +12,10 @@ import {
   Dimensions,
 } from "react-native";
 import { Link } from "expo-router";
-import * as Location from 'expo-location';
-import StarRating from './components/StarRating';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { useLocation } from './contexts/LocationContext';
+import * as Location from "expo-location";
+import StarRating from "./components/StarRating";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { useLocation } from "./contexts/LocationContext";
 
 interface Gym {
   place_id: string;
@@ -37,60 +37,80 @@ interface Gym {
   };
 }
 
-type SortOption = '距離' | '評価' | 'レビュー数';
-type FilterOption = '全て' | '営業中' | '高評価' | 'レビュー多数';
+type SortOption = "距離" | "評価" | "レビュー数";
+type FilterOption = "全て" | "営業中" | "高評価" | "レビュー多数";
 
 export default function GymSearchScreen() {
   const { userLocation } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [gyms, setGyms] = useState<Gym[]>([]);
+  const [allGyms, setAllGyms] = useState<Gym[]>([]);
+  const [filteredGyms, setFilteredGyms] = useState<Gym[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortModalVisible, setSortModalVisible] = useState(false);
-  const [currentSort, setCurrentSort] = useState<SortOption>('距離');
+  const [currentSort, setCurrentSort] = useState<SortOption>("距離");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<FilterOption[]>(['全て']);
+  const [activeFilters, setActiveFilters] = useState<FilterOption[]>(["全て"]);
+  const [tempFilters, setTempFilters] = useState<FilterOption[]>(["全て"]);
   const [showMap, setShowMap] = useState(false);
   const mapRef = React.useRef<MapView>(null);
 
   console.log("activeFilters", activeFilters);
+  console.log("filteredGyms", filteredGyms);
 
-  const sortOptions: SortOption[] = ['距離', '評価', 'レビュー数'];
-  const filterOptions: FilterOption[] = ['全て', '営業中', '高評価', 'レビュー多数'];
+  const sortOptions: SortOption[] = ["距離", "評価", "レビュー数"];
+  const filterOptions: FilterOption[] = [
+    "全て",
+    "営業中",
+    "高評価",
+    "レビュー多数",
+  ];
 
   useEffect(() => {
     searchNearbyGyms();
   }, []);
 
+  useEffect(() => {
+    const filtered = applyFilters(allGyms);
+    const sorted = sortGyms(filtered, currentSort);
+    setFilteredGyms(sorted);
+  }, [activeFilters, currentSort, allGyms]);
+
   const calculateDistance = (gym: Gym) => {
     if (!userLocation) return Infinity;
-    
+
     const R = 6371; // 地球の半径（km）
     const lat1 = userLocation.coords.latitude;
     const lon1 = userLocation.coords.longitude;
     const lat2 = gym.geometry.location.lat;
     const lon2 = gym.geometry.location.lng;
-    
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
 
   const sortGyms = (gyms: Gym[], sortType: SortOption) => {
     const sortedGyms = [...gyms];
     switch (sortType) {
-      case '距離':
-        return sortedGyms.sort((a, b) => calculateDistance(a) - calculateDistance(b));
-      case '評価':
+      case "距離":
+        return sortedGyms.sort(
+          (a, b) => calculateDistance(a) - calculateDistance(b)
+        );
+      case "評価":
         return sortedGyms.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      case 'レビュー数':
-        return sortedGyms.sort((a, b) => (b.user_ratings_total || 0) - (a.user_ratings_total || 0));
+      case "レビュー数":
+        return sortedGyms.sort(
+          (a, b) => (b.user_ratings_total || 0) - (a.user_ratings_total || 0)
+        );
       default:
         return sortedGyms;
     }
@@ -98,21 +118,20 @@ export default function GymSearchScreen() {
 
   const handleSort = (option: SortOption) => {
     setCurrentSort(option);
-    setGyms(sortGyms(gyms, option));
     setSortModalVisible(false);
   };
 
   const applyFilters = (gyms: Gym[]) => {
-    if (activeFilters.includes('全て')) return gyms;
+    if (activeFilters.includes("全て")) return gyms;
 
-    return gyms.filter(gym => {
-      return activeFilters.every(filter => {
+    return gyms.filter((gym) => {
+      return activeFilters.every((filter) => {
         switch (filter) {
-          case '営業中':
+          case "営業中":
             return gym.opening_hours?.open_now === true;
-          case '高評価':
+          case "高評価":
             return (gym.rating || 0) >= 4.0;
-          case 'レビュー多数':
+          case "レビュー多数":
             return (gym.user_ratings_total || 0) >= 30;
           default:
             return true;
@@ -122,45 +141,54 @@ export default function GymSearchScreen() {
   };
 
   const handleFilter = (option: FilterOption) => {
-    if (option === '全て') {
-      setActiveFilters(['全て']);
+    if (option === "全て") {
+      setTempFilters(["全て"]);
     } else {
-      const newFilters = activeFilters.filter(f => f !== '全て');
+      const newFilters = tempFilters.filter((f) => f !== "全て");
       if (newFilters.includes(option)) {
-        setActiveFilters(newFilters.filter(f => f !== option));
+        setTempFilters(newFilters.filter((f) => f !== option));
       } else {
-        setActiveFilters([...newFilters, option]);
+        setTempFilters([...newFilters, option]);
       }
     }
+  };
+
+  const applyTempFilters = () => {
+    setActiveFilters(tempFilters);
+    setFilterModalVisible(false);
+  };
+
+  const cancelTempFilters = () => {
+    setTempFilters(activeFilters);
+    setFilterModalVisible(false);
   };
 
   const searchNearbyGyms = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        alert('位置情報の許可が必要です');
+      if (status !== "granted") {
+        alert("位置情報の許可が必要です");
         return;
       }
 
       const location = await Location.getCurrentPositionAsync({});
-      
+
       const params = {
         location: `${location.coords.latitude},${location.coords.longitude}`,
         radius: "5000",
         type: "gym",
         language: "ja",
-        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg"
+        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
       };
 
-      const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+      const url =
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(`${url}?${queryString}`);
       const data = await response.json();
-      
+
       if (data.status === "OK") {
-        const filteredGyms = applyFilters(data.results);
-        const sortedGyms = sortGyms(filteredGyms, currentSort);
-        setGyms(sortedGyms);
+        setAllGyms(data.results);
       }
     } catch (error) {
       console.error("ジムの検索中にエラーが発生しました:", error);
@@ -177,7 +205,7 @@ export default function GymSearchScreen() {
       const params = {
         query: `${text} ジム`,
         language: "ja",
-        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg"
+        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
       };
 
       const url = "https://maps.googleapis.com/maps/api/place/textsearch/json";
@@ -186,9 +214,7 @@ export default function GymSearchScreen() {
       const data = await response.json();
 
       if (data.status === "OK") {
-        const filteredGyms = applyFilters(data.results);
-        console.log("filteredGyms", filteredGyms);
-        setGyms(filteredGyms);
+        setAllGyms(data.results);
       }
     } catch (error) {
       console.error("検索中にエラーが発生しました:", error);
@@ -205,9 +231,9 @@ export default function GymSearchScreen() {
           <Text style={styles.gymAddress}>{item.formatted_address}</Text>
           <View style={styles.ratingContainer}>
             {item.rating && (
-              <StarRating 
-                rating={item.rating} 
-                totalReviews={item.user_ratings_total} 
+              <StarRating
+                rating={item.rating}
+                totalReviews={item.user_ratings_total}
               />
             )}
             <Text style={styles.openStatus}>
@@ -221,12 +247,15 @@ export default function GymSearchScreen() {
 
   const moveToCurrentLocation = () => {
     if (userLocation && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: userLocation.coords.latitude,
-        longitude: userLocation.coords.longitude,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
-      }, 1000); // 1000msかけてアニメーション
+      mapRef.current.animateToRegion(
+        {
+          latitude: userLocation.coords.latitude,
+          longitude: userLocation.coords.longitude,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        },
+        1000
+      ); // 1000msかけてアニメーション
     }
   };
 
@@ -234,10 +263,7 @@ export default function GymSearchScreen() {
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <TextInput
-          style={[
-            styles.searchInput,
-            showMap && styles.searchInputDisabled
-          ]}
+          style={[styles.searchInput, showMap && styles.searchInputDisabled]}
           placeholder="地域名やジム名で検索"
           value={searchQuery}
           onChangeText={handleSearch}
@@ -245,10 +271,18 @@ export default function GymSearchScreen() {
         />
         <TouchableOpacity
           style={styles.filterButton}
-          onPress={() => setFilterModalVisible(true)}
+          onPress={() => {
+            setTempFilters(activeFilters);
+            setFilterModalVisible(true);
+          }}
           disabled={showMap}
         >
-          <Text style={[styles.filterButtonText, showMap && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.filterButtonText,
+              showMap && styles.buttonTextDisabled,
+            ]}
+          >
             絞込み
           </Text>
         </TouchableOpacity>
@@ -257,7 +291,12 @@ export default function GymSearchScreen() {
           onPress={() => setSortModalVisible(true)}
           disabled={showMap}
         >
-          <Text style={[styles.sortButtonText, showMap && styles.buttonTextDisabled]}>
+          <Text
+            style={[
+              styles.sortButtonText,
+              showMap && styles.buttonTextDisabled,
+            ]}
+          >
             {currentSort}順
           </Text>
         </TouchableOpacity>
@@ -276,7 +315,7 @@ export default function GymSearchScreen() {
         animationType="slide"
         transparent={true}
         visible={filterModalVisible}
-        onRequestClose={() => setFilterModalVisible(false)}
+        onRequestClose={cancelTempFilters}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -286,30 +325,29 @@ export default function GymSearchScreen() {
                 key={option}
                 style={[
                   styles.filterOption,
-                  activeFilters.includes(option) && styles.selectedFilter
+                  tempFilters.includes(option) && styles.selectedFilter,
                 ]}
                 onPress={() => handleFilter(option)}
               >
-                <Text style={[
-                  styles.filterOptionText,
-                  activeFilters.includes(option) && styles.selectedFilterText
-                ]}>
+                <Text
+                  style={[
+                    styles.filterOptionText,
+                    tempFilters.includes(option) && styles.selectedFilterText,
+                  ]}
+                >
                   {option}
                 </Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity
               style={styles.applyButton}
-              onPress={() => {
-                setFilterModalVisible(false);
-                applyFilters(gyms);
-              }}
+              onPress={applyTempFilters}
             >
               <Text style={styles.applyButtonText}>適用</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.cancelButton}
-              onPress={() => setFilterModalVisible(false)}
+              onPress={cancelTempFilters}
             >
               <Text style={styles.cancelButtonText}>キャンセル</Text>
             </TouchableOpacity>
@@ -331,14 +369,16 @@ export default function GymSearchScreen() {
                 key={option}
                 style={[
                   styles.sortOption,
-                  currentSort === option && styles.selectedSort
+                  currentSort === option && styles.selectedSort,
                 ]}
                 onPress={() => handleSort(option)}
               >
-                <Text style={[
-                  styles.sortOptionText,
-                  currentSort === option && styles.selectedSortText
-                ]}>
+                <Text
+                  style={[
+                    styles.sortOptionText,
+                    currentSort === option && styles.selectedSortText,
+                  ]}
+                >
                   {option}順
                 </Text>
               </TouchableOpacity>
@@ -354,7 +394,11 @@ export default function GymSearchScreen() {
       </Modal>
 
       {loading ? (
-        <ActivityIndicator style={styles.loading} size="large" color="#6B4DE6" />
+        <ActivityIndicator
+          style={styles.loading}
+          size="large"
+          color="#6B4DE6"
+        />
       ) : showMap ? (
         <>
           <MapView
@@ -377,7 +421,7 @@ export default function GymSearchScreen() {
                 pinColor="blue"
               />
             )}
-            {gyms.map((gym) => (
+            {filteredGyms.map((gym) => (
               <Marker
                 key={gym.place_id}
                 coordinate={{
@@ -389,7 +433,7 @@ export default function GymSearchScreen() {
               />
             ))}
           </MapView>
-          
+
           <TouchableOpacity
             style={styles.currentLocationButton}
             onPress={moveToCurrentLocation}
@@ -399,7 +443,7 @@ export default function GymSearchScreen() {
         </>
       ) : (
         <FlatList
-          data={gyms}
+          data={filteredGyms}
           renderItem={renderGymItem}
           keyExtractor={(item) => item.place_id}
           contentContainerStyle={styles.listContainer}
@@ -422,8 +466,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
   },
   searchInput: {
@@ -437,66 +481,66 @@ const styles = StyleSheet.create({
   filterButton: {
     paddingHorizontal: 15,
     paddingVertical: 8,
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     borderRadius: 15,
   },
   filterButtonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   sortButton: {
     paddingHorizontal: 15,
     paddingVertical: 8,
-    backgroundColor: '#6B4DE6',
+    backgroundColor: "#6B4DE6",
     borderRadius: 15,
   },
   sortButtonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
   sortOption: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    borderBottomColor: "#EEE",
   },
   selectedSort: {
-    backgroundColor: '#F0F0FF',
+    backgroundColor: "#F0F0FF",
   },
   sortOptionText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   selectedSortText: {
-    color: '#6B4DE6',
-    fontWeight: 'bold',
+    color: "#6B4DE6",
+    fontWeight: "bold",
   },
   cancelButton: {
     marginTop: 15,
     paddingVertical: 15,
   },
   cancelButtonText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   loading: {
     marginTop: 20,
@@ -540,43 +584,43 @@ const styles = StyleSheet.create({
   filterOption: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    borderBottomColor: "#EEE",
   },
   selectedFilter: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: "#E8F5E9",
   },
   filterOptionText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   selectedFilterText: {
-    color: '#4CAF50',
-    fontWeight: 'bold',
+    color: "#4CAF50",
+    fontWeight: "bold",
   },
   applyButton: {
     marginTop: 15,
     paddingVertical: 15,
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     borderRadius: 10,
   },
   applyButtonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 16,
-    textAlign: 'center',
-    fontWeight: 'bold',
+    textAlign: "center",
+    fontWeight: "bold",
   },
   mapContainer: {
     flex: 1,
   },
   map: {
-    width: Dimensions.get('window').width,
-    height: '100%',
+    width: Dimensions.get("window").width,
+    height: "100%",
   },
   mapToggleButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 15,
     bottom: 30,
-    backgroundColor: '#6B4DE6',
+    backgroundColor: "#6B4DE6",
     padding: 15,
     borderRadius: 25,
     zIndex: 1,
@@ -587,24 +631,24 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   mapToggleButtonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
+    color: "#FFF",
+    fontWeight: "bold",
   },
   searchInputDisabled: {
-    backgroundColor: '#E0E0E0',
-    color: '#999',
+    backgroundColor: "#E0E0E0",
+    color: "#999",
   },
   buttonDisabled: {
-    backgroundColor: '#D1D1D1',
+    backgroundColor: "#D1D1D1",
   },
   buttonTextDisabled: {
-    color: '#999',
+    color: "#999",
   },
   currentLocationButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 15,
     bottom: 90, // mapToggleButtonの上に配置
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     padding: 12,
     borderRadius: 25,
     shadowColor: "#000",
@@ -614,7 +658,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   currentLocationButtonText: {
-    color: '#6B4DE6',
-    fontWeight: 'bold',
+    color: "#6B4DE6",
+    fontWeight: "bold",
   },
 });
