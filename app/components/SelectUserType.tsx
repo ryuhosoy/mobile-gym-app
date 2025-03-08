@@ -16,7 +16,7 @@ export default function SelectUserType() {
       <Text style={styles.subtitle}>あなたの立場を選択してください</Text>
 
       <View style={styles.buttonContainer}>
-        <Link href="/user/gymSearch" asChild>
+        <Link href="/auth/login" asChild>
           <TouchableOpacity style={styles.button}>
             <View style={styles.buttonContent}>
               <Text style={styles.buttonText}>ユーザーとして進む</Text>

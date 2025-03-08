@@ -36,6 +36,7 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="index" options={{ title: "セレクト" }} />
+          <Stack.Screen name="auth/login" options={{ title: "ログイン" }} />
           <Stack.Screen name="user/gymSearch" options={{ title: "ジム検索" }} />
           <Stack.Screen name="gym/[id]" options={{ title: "ジム詳細" }} />
           <Stack.Screen name="+not-found" />
