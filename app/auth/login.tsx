@@ -34,7 +34,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.replace('/user/gymSearch');
+      router.replace('../(tabs)/gymSearch');
     } catch (error) {
       Alert.alert('エラー', 'ログインに失敗しました。メールアドレスとパスワードを確認してください。');
     } finally {
@@ -51,7 +51,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      router.replace('/user/gymSearch');
+      router.replace('../(tabs)/gymSearch');
     } catch (error) {
       Alert.alert('エラー', 'アカウント作成に失敗しました。別のメールアドレスを試してください。');
     } finally {
