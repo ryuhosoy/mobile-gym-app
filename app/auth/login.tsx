@@ -3,20 +3,8 @@ import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'reac
 import { Link, useRouter } from 'expo-router';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { app } from '../config/firebase';
 
-// Firebaseの設定
-const firebaseConfig = {
-  apiKey: "AIzaSyANj1z8gyiXbHVVe9W8JwoFgEli3Nidc8w",
-  authDomain: "gym-app-35f1f.firebaseapp.com",
-  projectId: "gym-app-35f1f",
-  storageBucket: "gym-app-35f1f.firebasestorage.app",
-  messagingSenderId: "985065739003",
-  appId: "1:985065739003:web:75fda36b4bdb27664bd65e",
-  measurementId: "G-7SG442LM1X"
-};
-
-// Firebase初期化
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 export default function Login() {

@@ -13,6 +13,10 @@ import { useLocalSearchParams } from "expo-router";
 import StarRating from "../components/StarRating";
 import MapView, { Marker } from "react-native-maps";
 import { useLocation } from "../contexts/LocationContext";
+import { getAuth } from "firebase/auth";
+import { getDatabase, ref, push, set, update } from "firebase/database";
+import { app } from "../config/firebase";
+import { useRouter } from "expo-router";
 
 interface GymDetails {
   name: string;
@@ -50,6 +54,9 @@ export default function GymDetailScreen() {
   const [loading, setLoading] = useState(true);
   const { userLocation } = useLocation();
   const [distanceInfo, setDistanceInfo] = useState<DistanceInfo | null>(null);
+  const router = useRouter();
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
   useEffect(() => {
     fetchGymDetails();
@@ -121,6 +128,41 @@ export default function GymDetailScreen() {
   const handleWebsite = () => {
     if (details?.website) {
       Linking.openURL(details.website);
+    }
+  };
+
+  const createChatRoom = async () => {
+    if (!auth.currentUser || !details) return;
+
+    try {
+      // 新しいチャットルームのIDを生成
+      const newRoomRef = push(ref(db, 'chats'));
+      const roomId = newRoomRef.key;
+      
+      if (!roomId) return;
+
+      const timestamp = Date.now();
+      
+      // チャットルーム情報を保存
+      const updates: { [key: string]: any } = {};
+      updates[`/chats/${roomId}`] = {
+        gymId: id,
+        gymName: details.name,
+        title: details.name,
+        lastMessage: "チャットルームが作成されました",
+        lastMessageTime: timestamp,
+        timestamp: timestamp
+      };
+      
+      // メンバー情報を保存
+      updates[`/members/${roomId}/${auth.currentUser.uid}`] = true;
+      
+      await update(ref(db), updates);
+      
+      // チャットルームに遷移
+      router.push(`../chat/${roomId}`);
+    } catch (error) {
+      console.error("チャットルームの作成に失敗しました:", error);
     }
   };
 
@@ -225,6 +267,12 @@ export default function GymDetailScreen() {
               <Text style={styles.buttonText}>ウェブサイトを見る</Text>
             </TouchableOpacity>
           )}
+          <TouchableOpacity
+            style={[styles.button, styles.chatButton]}
+            onPress={createChatRoom}
+          >
+            <Text style={styles.buttonText}>チャットで問い合わせ</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -282,13 +330,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'column',
+    gap: 10,
     marginTop: 30,
-    gap: 15,
   },
   button: {
-    flex: 1,
     backgroundColor: "#6B4DE6",
     padding: 15,
     borderRadius: 10,
@@ -296,6 +342,9 @@ const styles = StyleSheet.create({
   },
   websiteButton: {
     backgroundColor: "#4CAF50",
+  },
+  chatButton: {
+    backgroundColor: "#FF6B6B",
   },
   buttonText: {
     color: "#FFF",
