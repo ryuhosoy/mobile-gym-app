@@ -38,7 +38,7 @@ interface Gym {
 }
 
 type SortOption = "距離" | "評価" | "レビュー数";
-type FilterOption = "全て" | "営業中" | "高評価" | "レビュー多数";
+type FilterOption = "全て" | "営業中" | "高評価" | "レビュー多数" | "24時間営業";
 
 export default function GymSearch() {
   const { userLocation } = useLocation();
@@ -63,6 +63,7 @@ export default function GymSearch() {
     "営業中",
     "高評価",
     "レビュー多数",
+    "24時間営業",
   ];
 
   useEffect(() => {
@@ -133,6 +134,8 @@ export default function GymSearch() {
             return (gym.rating || 0) >= 4.0;
           case "レビュー多数":
             return (gym.user_ratings_total || 0) >= 30;
+          case "24時間営業":
+            return true; // APIからの結果に既に含まれている前提
           default:
             return true;
         }
@@ -156,6 +159,9 @@ export default function GymSearch() {
   const applyTempFilters = () => {
     setActiveFilters(tempFilters);
     setFilterModalVisible(false);
+    if (tempFilters.includes("24時間営業")) {
+      handleSearch(searchQuery);
+    }
   };
 
   const cancelTempFilters = () => {
@@ -202,8 +208,12 @@ export default function GymSearch() {
     setLoading(true);
 
     try {
+      const query = activeFilters.includes("24時間営業") ? 
+        `${text} ジム 24時間` : 
+        `${text} ジム`;
+        
       const params = {
-        query: `${text} ジム`,
+        query: query,
         language: "ja",
         key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
       };
