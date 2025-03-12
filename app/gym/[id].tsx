@@ -135,15 +135,13 @@ export default function GymDetailScreen() {
     if (!auth.currentUser || !details) return;
 
     try {
-      // 新しいチャットルームのIDを生成
-      const newRoomRef = push(ref(db, 'chats'));
+      const newRoomRef = push(ref(db, "chats"));
       const roomId = newRoomRef.key;
-      
+
       if (!roomId) return;
 
       const timestamp = Date.now();
-      
-      // チャットルーム情報を保存
+
       const updates: { [key: string]: any } = {};
       updates[`/chats/${roomId}`] = {
         gymId: id,
@@ -151,15 +149,13 @@ export default function GymDetailScreen() {
         title: details.name,
         lastMessage: "チャットルームが作成されました",
         lastMessageTime: timestamp,
-        timestamp: timestamp
+        timestamp: timestamp,
       };
-      
-      // メンバー情報を保存
+
       updates[`/members/${roomId}/${auth.currentUser.uid}`] = true;
-      
+
       await update(ref(db), updates);
-      
-      // チャットルームに遷移
+
       router.push(`../chat/${roomId}`);
     } catch (error) {
       console.error("チャットルームの作成に失敗しました:", error);
@@ -253,6 +249,9 @@ export default function GymDetailScreen() {
           </>
         )}
 
+        <Text style={styles.sectionTitle}>料金・プラン情報</Text>
+        <Text style={styles.info}>料金、プランはウェブサイトからご確認下さい。</Text>
+
         <View style={styles.buttonContainer}>
           {details.formatted_phone_number && (
             <TouchableOpacity style={styles.button} onPress={handleCall}>
@@ -330,7 +329,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   buttonContainer: {
-    flexDirection: 'column',
+    flexDirection: "column",
     gap: 10,
     marginTop: 30,
   },
