@@ -127,18 +127,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
               <TouchableOpacity
                 key={itemIndex}
                 style={[styles.card, { width: width * 0.7 }]}
-                // onPress={() => {
-                //   router.navigate({
-                //     pathname: "/(tabs)/gymSearch",
-                //     params: { searchQuery: item.name }
-                //   });
-                // }}
                 onPress={() => {
-                  console.log("item.name", item.name);
-                //   router.push({
-                //     pathname: "/(tabs)/gymSearch",
-                //     params: { searchQuery: item.name }
-                //   });
                   navigation.navigate("gymSearch", { searchQuery: item.name });
                 }}
               >
