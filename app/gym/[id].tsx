@@ -60,6 +60,7 @@ export default function GymDetailScreen() {
 
   useEffect(() => {
     fetchGymDetails();
+    console.log("id", id);
   }, [id]);
 
   useEffect(() => {

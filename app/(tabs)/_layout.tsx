@@ -10,6 +10,16 @@ export default function TabLayout() {
       tabBarInactiveTintColor: '#666',
     }}>
       <Tab.Screen
+        name="home"
+        component={require('./home').default}
+        options={{
+          title: 'ホーム',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="home" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="gymSearch"
         component={require('./gymSearch').default}
         options={{

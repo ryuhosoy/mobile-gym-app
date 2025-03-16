@@ -11,7 +11,7 @@ import {
   Modal,
   Dimensions,
 } from "react-native";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useLocalSearchParams } from "expo-router";
 import * as Location from "expo-location";
 import StarRating from "../components/StarRating";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -40,9 +40,10 @@ interface Gym {
 type SortOption = "距離" | "評価" | "レビュー数";
 type FilterOption = "全て" | "営業中" | "高評価" | "レビュー多数" | "24時間営業";
 
-export default function GymSearch() {
+export default function gymSearch({ route }: { route: any }) {
   const { userLocation } = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery } = route.params || {};
+  const [searchText, setSearchText] = useState(searchQuery || '');
   const [allGyms, setAllGyms] = useState<Gym[]>([]);
   const [filteredGyms, setFilteredGyms] = useState<Gym[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,7 @@ export default function GymSearch() {
 
   console.log("activeFilters", activeFilters);
   console.log("filteredGyms", filteredGyms);
+  console.log("searchText", searchText);
 
   const sortOptions: SortOption[] = ["距離", "評価", "レビュー数"];
   const filterOptions: FilterOption[] = [
@@ -65,6 +67,14 @@ export default function GymSearch() {
     "レビュー多数",
     "24時間営業",
   ];
+
+  useEffect(() => {
+    console.log("searchQueryが変わりました", searchQuery);
+    console.log("searchQuery", searchQuery);
+    if (searchQuery) {
+      handleSearch(searchQuery);
+    }
+  }, [searchQuery]);
 
   useEffect(() => {
     searchNearbyGyms();
@@ -160,7 +170,7 @@ export default function GymSearch() {
     setActiveFilters(tempFilters);
     setFilterModalVisible(false);
     if (tempFilters.includes("24時間営業")) {
-      handleSearch(searchQuery);
+      handleSearch(searchText);
     }
   };
 
@@ -204,7 +214,7 @@ export default function GymSearch() {
   };
 
   const handleSearch = async (text: string) => {
-    setSearchQuery(text);
+    setSearchText(text);
     setLoading(true);
 
     try {
@@ -275,7 +285,7 @@ export default function GymSearch() {
         <TextInput
           style={[styles.searchInput, showMap && styles.searchInputDisabled]}
           placeholder="地域名やジム名で検索"
-          value={searchQuery}
+          value={searchText}
           onChangeText={handleSearch}
           editable={!showMap}
         />
