@@ -1,5 +1,5 @@
-import SelectUserType from "./components/SelectUserType";
+import Login from "./auth/login";
 
 export default function Index() {
-  return <SelectUserType />;
+  return <Login />;
 }

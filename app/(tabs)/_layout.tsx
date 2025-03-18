@@ -27,9 +27,19 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <FontAwesome name="search" size={24} color={color} />
           ),
-        }}
+        }}  
       />
       <Tab.Screen
+        name="profile"
+        component={require('./profile').default}
+        options={{
+          title: 'プロフィール',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="user" size={24} color={color} />
+          ),
+        }}
+      />
+      {/* <Tab.Screen
         name="messages" 
         component={require('./messages').default}
         options={{
@@ -38,7 +48,7 @@ export default function TabLayout() {
             <FontAwesome name="envelope" size={24} color={color} />
           ),
         }}
-      />
+      /> */}
     </Tab.Navigator>
   );
 }
