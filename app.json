@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ジム検索アプリ",
-    "slug": "gym-search-app",
+    "slug": "react-native-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon_1024x1024.png",
