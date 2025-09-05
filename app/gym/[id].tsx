@@ -267,12 +267,6 @@ export default function GymDetailScreen() {
               <Text style={styles.buttonText}>ウェブサイトを見る</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            style={[styles.button, styles.chatButton]}
-            onPress={createChatRoom}
-          >
-            <Text style={styles.buttonText}>チャットで問い合わせ</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
