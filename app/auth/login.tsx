@@ -10,6 +10,8 @@ const auth = getAuth(app);
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -31,14 +33,25 @@ export default function Login() {
   };
 
   const handleSignUp = async () => {
-    if (!email || !password) {
-      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('エラー', 'すべての項目を入力してください');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('エラー', 'パスワードが一致しません');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('エラー', 'パスワードは6文字以上で入力してください');
       return;
     }
 
     setIsLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      Alert.alert('成功', 'アカウントが作成されました！');
       router.replace('../(tabs)/home');
     } catch (error) {
       Alert.alert('エラー', 'アカウント作成に失敗しました。別のメールアドレスを試してください。');
@@ -47,9 +60,18 @@ export default function Login() {
     }
   };
 
+  const toggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ログイン</Text>
+      <Text style={styles.title}>
+        {isSignUp ? '新規アカウント作成' : 'ログイン'}
+      </Text>
       
       <TextInput
         style={styles.input}
@@ -68,23 +90,39 @@ export default function Login() {
         secureTextEntry
       />
 
+      {isSignUp && (
+        <TextInput
+          style={styles.input}
+          placeholder="パスワード（確認）"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+      )}
+
       <TouchableOpacity 
         style={styles.button}
-        onPress={handleLogin}
+        onPress={isSignUp ? handleSignUp : handleLogin}
         disabled={isLoading}
       >
         <Text style={styles.buttonText}>
-          {isLoading ? 'ログイン中...' : 'ログイン'}
+          {isLoading 
+            ? (isSignUp ? '作成中...' : 'ログイン中...') 
+            : (isSignUp ? 'アカウント作成' : 'ログイン')
+          }
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
-        style={[styles.button, styles.signUpButton]}
-        onPress={handleSignUp}
+        style={styles.toggleButton}
+        onPress={toggleMode}
         disabled={isLoading}
       >
-        <Text style={styles.buttonText}>
-          {isLoading ? '作成中...' : '新規アカウント作成'}
+        <Text style={styles.toggleButtonText}>
+          {isSignUp 
+            ? 'すでにアカウントをお持ちの方はこちら' 
+            : '新規アカウントを作成する'
+          }
         </Text>
       </TouchableOpacity>
     </View>
@@ -125,5 +163,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  toggleButton: {
+    backgroundColor: 'transparent',
+    padding: 10,
+    marginTop: 10,
+  },
+  toggleButtonText: {
+    color: '#6B4DE6',
+    textAlign: 'center',
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 }); 
