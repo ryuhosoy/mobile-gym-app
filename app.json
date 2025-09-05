@@ -1,27 +1,27 @@
 {
   "expo": {
-    "name": "react-native-app",
-    "slug": "react-native-app",
+    "name": "ジム検索アプリ",
+    "slug": "gym-search-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/images/icon_1024x1024.png",
+    "scheme": "gymapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "近くのジムを検索できるアプリ",
+    "category": "health-fitness",
+    "keywords": ["ジム", "フィットネス", "予約", "検索"],
+    "privacy": "public",
+    "primaryLanguage": "ja",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ryuhosoy.gym-app"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+      "bundleIdentifier": "com.ryuhosoy.gym-app",
+      "displayName": "ジム検索アプリ",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "近くのジムを検索するために位置情報を使用します",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "近くのジムを検索するために位置情報を使用します"
       }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
