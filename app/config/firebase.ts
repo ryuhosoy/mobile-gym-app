@@ -1,7 +1,9 @@
 import { initializeApp } from "firebase/app";
 
+console.log("firebaseConfig", process.env.EXPO_PUBLIC_FIREBASE_API_KEY!);
+
 const firebaseConfig = {
-  apiKey: "AIzaSyANj1z8gyiXbHVVe9W8JwoFgEli3Nidc8w",
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY!,
   authDomain: "gym-app-35f1f.firebaseapp.com",
   projectId: "gym-app-35f1f",
   storageBucket: "gym-app-35f1f.firebasestorage.app",

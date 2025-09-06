@@ -76,7 +76,7 @@ export default function GymDetailScreen() {
         fields:
           "name,formatted_address,rating,user_ratings_total,formatted_phone_number,website,opening_hours,geometry",
         language: "ja",
-        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
+        key: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY!,
       };
 
       const url = "https://maps.googleapis.com/maps/api/place/details/json";
@@ -104,7 +104,7 @@ export default function GymDetailScreen() {
         destinations: `${details.geometry.location.lat},${details.geometry.location.lng}`,
         mode: "walking",
         language: "ja",
-        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
+        key: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY!,
       };
 
       const url = "https://maps.googleapis.com/maps/api/distancematrix/json";

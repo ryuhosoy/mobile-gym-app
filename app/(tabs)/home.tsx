@@ -61,6 +61,9 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
   }, [searchQuery]);
 
   useEffect(() => {
+    // 環境変数の読み込み確認
+    console.log('Home - API Key loaded:', process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY ? 'YES' : 'NO');
+    
     const fetch24HourGyms = async () => {
       if (location.userLocation) {
         try {
@@ -70,7 +73,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
             type: "gym",
             keyword: "24時間",
             language: "ja",
-            key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
+            key: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY!,
           };
 
           const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";

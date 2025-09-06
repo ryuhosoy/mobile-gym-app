@@ -194,7 +194,7 @@ export default function gymSearch({ route }: { route: any }) {
         radius: "5000",
         type: "gym",
         language: "ja",
-        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
+        key: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY!,
       };
 
       const url =
@@ -225,7 +225,7 @@ export default function gymSearch({ route }: { route: any }) {
       const params = {
         query: query,
         language: "ja",
-        key: "AIzaSyD0C3aL0m4on5-6w5H3W1NawXPGHByZOjg",
+        key: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY!,
       };
 
       const url = "https://maps.googleapis.com/maps/api/place/textsearch/json";
