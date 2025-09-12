@@ -1,5 +1,9 @@
-import Login from "./auth/login";
+import { useEffect } from 'react';
+import { router } from 'expo-router';
 
 export default function Index() {
-  return <Login />;
+  useEffect(() => {
+    router.replace('../(tabs)/home');
+  }, []);
+  return null;
 }
