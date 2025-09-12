@@ -29,7 +29,7 @@ export default function TabLayout() {
           ),
         }}  
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="profile"
         component={require('./profile').default}
         options={{
@@ -38,7 +38,7 @@ export default function TabLayout() {
             <FontAwesome name="user" size={24} color={color} />
           ),
         }}
-      />
+      /> */}
       {/* <Tab.Screen
         name="messages" 
         component={require('./messages').default}
