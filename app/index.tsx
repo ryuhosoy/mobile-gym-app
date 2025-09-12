@@ -1,9 +1,5 @@
-import { useEffect } from 'react';
-import { router } from 'expo-router';
+import NavigateToHome from './NavigateToHome';
 
 export default function Index() {
-  useEffect(() => {
-    router.replace('../(tabs)/home');
-  }, []);
-  return null;
+  return <NavigateToHome />;
 }
