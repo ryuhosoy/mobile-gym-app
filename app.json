@@ -9,18 +9,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "description": "近くのジムを検索できるアプリ",
-    "category": "health-fitness",
-    "keywords": ["ジム", "フィットネス", "予約", "検索"],
-    "privacy": "public",
-    "primaryLanguage": "ja",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ryuhosoy.gym-app",
-      "displayName": "ジム検索アプリ",
       "buildNumber": "1",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "近くのジムを検索するために位置情報を使用します",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "近くのジムを検索するために位置情報を使用します"
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "近くのジムを検索するために位置情報を使用します",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "plugins": [
