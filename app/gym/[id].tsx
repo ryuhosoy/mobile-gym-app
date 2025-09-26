@@ -8,13 +8,14 @@ import {
   Linking,
   ActivityIndicator,
   Dimensions,
+  TextInput,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import StarRating from "../components/StarRating";
 import MapView, { Marker } from "react-native-maps";
 import { useLocation } from "../contexts/LocationContext";
 import { getAuth } from "firebase/auth";
-import { getDatabase, ref, push, set, update } from "firebase/database";
+import { getDatabase, ref, push, set, update, get } from "firebase/database";
 import { app } from "../config/firebase";
 import { useRouter } from "expo-router";
 
@@ -48,6 +49,13 @@ interface DistanceInfo {
   };
 }
 
+interface Review {
+  rating: number;
+  comment: string;
+  userId: string;
+  id: string;
+}
+
 export default function GymDetailScreen() {
   const { id } = useLocalSearchParams();
   const [details, setDetails] = useState<GymDetails | null>(null);
@@ -57,9 +65,12 @@ export default function GymDetailScreen() {
   const router = useRouter();
   const auth = getAuth(app);
   const db = getDatabase(app);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
 
   useEffect(() => {
     fetchGymDetails();
+    fetchReviews();
     console.log("id", id);
   }, [id]);
 
@@ -160,6 +171,57 @@ export default function GymDetailScreen() {
       router.push(`../chat/${roomId}`);
     } catch (error) {
       console.error("チャットルームの作成に失敗しました:", error);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const reviewsRef = ref(db, `reviews/${id}`);
+      const snapshot = await get(reviewsRef);
+      if (snapshot.exists()) {
+        setReviews(Object.values(snapshot.val()));
+      }
+    } catch (error) {
+      console.error("レビューの取得に失敗しました:", error);
+    }
+  };
+
+  const submitReview = async () => {
+    if (!auth.currentUser) return;
+    try {
+      const reviewRef = push(ref(db, `reviews/${id}`));
+
+      console.log("auth.currentUser.uid", auth.currentUser.uid);
+      console.log("newReview.rating", newReview.rating);
+      console.log("newReview.comment", newReview.comment);
+      
+      await set(reviewRef, {
+        userId: auth.currentUser.uid,
+        // rating: newReview.rating,
+        comment: newReview.comment,
+        timestamp: Date.now(),
+      });
+      setNewReview({ rating: 0, comment: "" });
+      fetchReviews();
+    } catch (error) {
+      console.error("レビューの投稿に失敗しました:", error);
+    }
+  };
+
+  const deleteReview = async (reviewId: string) => {
+    if (!auth.currentUser) return;
+    try {
+      console.log("reviewId", reviewId);
+      const reviewRef = ref(db, `reviews/${id}/${reviewId}`);
+      const snapshot = await get(reviewRef);
+      if (snapshot.exists() && snapshot.val().userId === auth.currentUser.uid) {
+        await set(reviewRef, null);
+        fetchReviews();
+      } else {
+        console.error('You can only delete your own reviews.');
+      }
+    } catch (error) {
+      console.error('Failed to delete review:', error);
     }
   };
 
@@ -268,6 +330,37 @@ export default function GymDetailScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        <View style={styles.sectionTitle}>ユーザーレビュー</View>
+        {reviews.map((review, index) => (
+          <View key={index} style={styles.reviewContainer}>
+            <StarRating rating={review.rating} totalReviews={1} />
+            <Text style={styles.reviewComment}>{review.comment}</Text>
+            {review.userId === auth.currentUser?.uid && (
+              <TouchableOpacity onPress={() => deleteReview(review.id)}>
+                <Text style={styles.deleteButton}>削除</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+
+        <View style={styles.reviewForm}>
+          <Text style={styles.sectionTitle}>レビューを投稿する</Text>
+          <StarRating
+            rating={newReview.rating}
+            totalReviews={5}
+            // onRatingChange={(rating) => setNewReview({ ...newReview, rating })}
+          />
+          <TextInput
+            style={styles.reviewInput}
+            placeholder="コメントを入力してください"
+            value={newReview.comment}
+            onChangeText={(text) => setNewReview({ ...newReview, comment: text })}
+          />
+          <TouchableOpacity style={styles.button} onPress={submitReview}>
+            <Text style={styles.buttonText}>投稿する</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -370,5 +463,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     textAlign: "center",
+  },
+  reviewContainer: {
+    backgroundColor: "#F0F0F0",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  reviewComment: {
+    fontSize: 14,
+    color: "#333",
+    marginTop: 5,
+  },
+  reviewForm: {
+    marginTop: 20,
+    padding: 20,
+    backgroundColor: "#F5F5F5",
+    borderRadius: 10,
+  },
+  reviewInput: {
+    height: 100,
+    borderColor: "#CCC",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    fontSize: 14,
+    color: "#333",
+  },
+  deleteButton: {
+    color: "#FF0000",
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: "right",
   },
 });

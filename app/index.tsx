@@ -1,5 +1,5 @@
-import NavigateToHome from './NavigateToHome';
+import Login from './auth/login';
 
 export default function Index() {
-  return <NavigateToHome />;
+  return <Login />;
 }
