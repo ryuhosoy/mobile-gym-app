@@ -190,14 +190,14 @@ export default function GymDetailScreen() {
     if (!auth.currentUser) return;
     try {
       const reviewRef = push(ref(db, `reviews/${id}`));
+      const reviewId = reviewRef.key; // 一意のIDを取得
 
-      console.log("auth.currentUser.uid", auth.currentUser.uid);
-      console.log("newReview.rating", newReview.rating);
-      console.log("newReview.comment", newReview.comment);
-      
+      if (!reviewId) return;
+
       await set(reviewRef, {
+        id: reviewId, // IDを保存
         userId: auth.currentUser.uid,
-        // rating: newReview.rating,
+        rating: newReview.rating,
         comment: newReview.comment,
         timestamp: Date.now(),
       });
@@ -212,6 +212,7 @@ export default function GymDetailScreen() {
     if (!auth.currentUser) return;
     try {
       console.log("reviewId", reviewId);
+      console.log("reviews/${id}/${reviewId}", `reviews/${id}/${reviewId}`);
       const reviewRef = ref(db, `reviews/${id}/${reviewId}`);
       const snapshot = await get(reviewRef);
       if (snapshot.exists() && snapshot.val().userId === auth.currentUser.uid) {
@@ -332,8 +333,10 @@ export default function GymDetailScreen() {
         </View>
 
         <View style={styles.sectionTitle}>ユーザーレビュー</View>
-        {reviews.map((review, index) => (
-          <View key={index} style={styles.reviewContainer}>
+        {reviews.map((review) => (
+          console.log("review", review),
+          <>
+          <View key={review.id} style={styles.reviewContainer}>
             <StarRating rating={review.rating} totalReviews={1} />
             <Text style={styles.reviewComment}>{review.comment}</Text>
             {review.userId === auth.currentUser?.uid && (
@@ -342,6 +345,7 @@ export default function GymDetailScreen() {
               </TouchableOpacity>
             )}
           </View>
+          </>
         ))}
 
         <View style={styles.reviewForm}>
