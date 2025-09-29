@@ -341,7 +341,9 @@ export default function GymDetailScreen() {
           )}
         </View>
 
-        <View style={styles.sectionTitle}><Text style={styles.sectionTitle}>ユーザーレビュー</Text></View>
+        {reviews.length > 0 && (
+          <View style={styles.sectionTitle}><Text style={styles.sectionTitle}>ユーザーレビュー</Text></View>
+        )}
         {reviews.map((review) => (
           <View key={review.id} style={styles.reviewContainer}>
             <StarRating rating={review.rating} totalReviews={1} />
