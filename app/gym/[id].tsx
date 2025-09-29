@@ -80,6 +80,10 @@ export default function GymDetailScreen() {
     }
   }, [userLocation, details]);
 
+  useEffect(() => {
+    console.log("レビューが更新されました:", reviews);
+  }, [reviews]);
+
   const fetchGymDetails = async () => {
     try {
       const params = {
@@ -176,10 +180,12 @@ export default function GymDetailScreen() {
 
   const fetchReviews = async () => {
     try {
+      console.log("レビュー投稿削除後にfetchReviewsを呼び出しています");
       const reviewsRef = ref(db, `reviews/${id}`);
       const snapshot = await get(reviewsRef);
       if (snapshot.exists()) {
         setReviews(Object.values(snapshot.val()));
+        console.log("setReviewsが更新されました");
       }
     } catch (error) {
       console.error("レビューの取得に失敗しました:", error);
@@ -332,10 +338,8 @@ export default function GymDetailScreen() {
           )}
         </View>
 
-        <View style={styles.sectionTitle}>ユーザーレビュー</View>
+        <View style={styles.sectionTitle}><Text style={styles.sectionTitle}>ユーザーレビュー</Text></View>
         {reviews.map((review) => (
-          console.log("review", review),
-          <>
           <View key={review.id} style={styles.reviewContainer}>
             <StarRating rating={review.rating} totalReviews={1} />
             <Text style={styles.reviewComment}>{review.comment}</Text>
@@ -345,7 +349,6 @@ export default function GymDetailScreen() {
               </TouchableOpacity>
             )}
           </View>
-          </>
         ))}
 
         <View style={styles.reviewForm}>
