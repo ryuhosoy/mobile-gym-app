@@ -180,12 +180,14 @@ export default function GymDetailScreen() {
 
   const fetchReviews = async () => {
     try {
-      console.log("レビュー投稿削除後にfetchReviewsを呼び出しています");
       const reviewsRef = ref(db, `reviews/${id}`);
       const snapshot = await get(reviewsRef);
+      console.log("snapshot in fetchReviews", snapshot);
       if (snapshot.exists()) {
         setReviews(Object.values(snapshot.val()));
         console.log("setReviewsが更新されました");
+      } else {
+        setReviews([]);
       }
     } catch (error) {
       console.error("レビューの取得に失敗しました:", error);
@@ -224,6 +226,7 @@ export default function GymDetailScreen() {
       if (snapshot.exists() && snapshot.val().userId === auth.currentUser.uid) {
         await set(reviewRef, null);
         fetchReviews();
+        console.log("レビュー投稿後にfetchReviewsを呼び出しています");
       } else {
         console.error('You can only delete your own reviews.');
       }
