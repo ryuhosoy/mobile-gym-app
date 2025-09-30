@@ -3,6 +3,7 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true,
+    "jsx": "react",
     "paths": {
       "@/*": [
         "./*"
