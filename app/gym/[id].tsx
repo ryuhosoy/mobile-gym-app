@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Dimensions,
   TextInput,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import StarRating from "../components/StarRating";
@@ -196,6 +197,10 @@ export default function GymDetailScreen() {
 
   const submitReview = async () => {
     if (!auth.currentUser) return;
+    if (newReview.rating === 0 || newReview.comment.trim() === "") {
+      Alert.alert("エラー", "評価とコメントを入力してください。");
+      return;
+    }
     try {
       const reviewRef = push(ref(db, `reviews/${id}`));
       const reviewId = reviewRef.key; // 一意のIDを取得
@@ -361,7 +366,7 @@ export default function GymDetailScreen() {
           <StarRating
             rating={newReview.rating}
             totalReviews={5}
-            // onRatingChange={(rating) => setNewReview({ ...newReview, rating })}
+            onRatingChange={(rating) => setNewReview({ ...newReview, rating })}
           />
           <TextInput
             style={styles.reviewInput}

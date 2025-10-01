@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Modal, Image } from "react-native";
+import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 
 const ProfileInput = () => {
@@ -9,13 +10,39 @@ const ProfileInput = () => {
   const [introduction, setIntroduction] = useState("");
   const [gymPurpose, setGymPurpose] = useState("");
   const [showPicker, setShowPicker] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled && result.assets.length > 0) {
+      setImage(result.assets[0].uri);
+    }
+  };
 
   const handleSubmit = () => {
-    console.log({ name, birthdate, gender, introduction, gymPurpose });
+    console.log({ name, birthdate, gender, introduction, gymPurpose, image });
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.label}>プロフィール画像</Text>
+      <TouchableOpacity onPress={pickImage} style={styles.imagePickerButton}>
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} />
+        ) : (
+          <Text style={styles.imagePickerText}>画像を選択</Text>
+        )}
+      </TouchableOpacity>
+
       <Text style={styles.label}>名前</Text>
       <TextInput
         style={styles.input}
@@ -119,6 +146,24 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 150,
+  },
+  imagePickerButton: {
+    height: 100,
+    width: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 50,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  imagePickerText: {
+    color: '#666',
+  },
+  image: {
+    height: 100,
+    width: 100,
   },
 });
 
