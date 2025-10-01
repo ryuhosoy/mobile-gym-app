@@ -16,6 +16,7 @@ import * as Location from "expo-location";
 import StarRating from "../components/StarRating";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocation } from "../contexts/LocationContext";
+import RNPickerSelect from "react-native-picker-select";
 
 interface Gym {
   place_id: string;
