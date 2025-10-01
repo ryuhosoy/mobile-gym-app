@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Modal } from "react-native";
 import { Picker } from '@react-native-picker/picker';
 
 const ProfileInput = () => {
@@ -8,9 +8,9 @@ const ProfileInput = () => {
   const [gender, setGender] = useState("");
   const [introduction, setIntroduction] = useState("");
   const [gymPurpose, setGymPurpose] = useState("");
+  const [showPicker, setShowPicker] = useState(false);
 
   const handleSubmit = () => {
-    // Handle form submission
     console.log({ name, birthdate, gender, introduction, gymPurpose });
   };
 
@@ -33,18 +33,28 @@ const ProfileInput = () => {
       />
 
       <Text style={styles.label}>性別</Text>
-      <Picker
-        selectedValue={gender}
-        onValueChange={(itemValue) => {
-          console.log('Selected Gender:', itemValue);
-          setGender(itemValue);
-        }}
-        style={styles.input}
-      >
-        <Picker.Item label="性別を選んでください…" value="" />
-        <Picker.Item label="男性" value="男性" />
-        <Picker.Item label="女性" value="女性" />
-      </Picker>
+      <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.pickerButton}>
+        <Text style={styles.pickerText}>{gender || "性別を選んでください…"}</Text>
+      </TouchableOpacity>
+
+      <Modal visible={showPicker} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={gender}
+              onValueChange={(itemValue) => {
+                setGender(itemValue);
+              }}
+              style={styles.picker}
+            >
+              <Picker.Item label="性別を選んでください…" value="" />
+              <Picker.Item label="男性" value="男性" />
+              <Picker.Item label="女性" value="女性" />
+            </Picker>
+            <Button title="閉じる" onPress={() => setShowPicker(false)} />
+          </View>
+        </View>
+      </Modal>
 
       <Text style={styles.label}>自己紹介</Text>
       <TextInput
@@ -72,7 +82,6 @@ const ProfileInput = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    zIndex: 10,
   },
   label: {
     fontSize: 16,
@@ -85,16 +94,31 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 8,
   },
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    color: "black",
-    paddingRight: 30,
+  pickerButton: {
+    height: 40,
+    justifyContent: 'center',
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 4,
+    marginBottom: 12,
+    paddingHorizontal: 8,
     backgroundColor: '#f0f0f0',
+  },
+  pickerText: {
+    color: '#666',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    margin: 20,
+    borderRadius: 10,
+    padding: 20,
+  },
+  picker: {
+    height: 150,
   },
 });
 
