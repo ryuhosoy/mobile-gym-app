@@ -30,15 +30,6 @@
           "backgroundColor": "#fefdfd"
         }
       ],
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static",
-            "useModularHeaders": true
-          }
-        }
-      ],
       "expo-font"
     ],
     "experiments": {
