@@ -7,7 +7,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import "react-native-reanimated";
 import { LocationProvider } from "./contexts/LocationContext";
@@ -36,20 +36,26 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
           {/* <Stack.Screen name="index" options={{ title: "セレクト" }} /> */}
-          <Stack.Screen name="auth/login" options={{ title: "認証" }} />
-          <Stack.Screen name="user/gymSearch" options={{ title: "ジム検索" }} />
-          <Stack.Screen 
-            name="(tabs)" 
-            options={{ 
-              headerShown: false,
-            }} 
+          <Stack.Screen
+            name="auth/login"
+            options={{
+              title: "認証",
+              headerBackTitle: "戻る",
+            }}
           />
-          <Stack.Screen 
-            name="gym/[id]" 
-            options={{ 
+          <Stack.Screen name="user/gymSearch" options={{ title: "ジム検索" }} />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="gym/[id]"
+            options={{
               headerTitle: "ジム詳細",
-              headerBackTitle: "ジム検索"
-            }} 
+              headerBackTitle: "ジム検索",
+            }}
           />
           {/* <Stack.Screen name="gym/[id]" options={{ title: "ジム詳細" }} /> */}
           <Stack.Screen name="+not-found" />
