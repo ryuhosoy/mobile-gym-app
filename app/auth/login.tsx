@@ -7,16 +7,12 @@ import { app } from '../config/firebase';
 const auth = getAuth(app);
 
 export default function Login() {
-  const [email, setEmail] = useState('ryuhosoy@yahoo.co.jp');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
-  // 環境変数の読み込み確認
-  console.log('Login - API Key loaded:', process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY ? 'YES' : 'NO');
-  console.log('Login - API Key value:', process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY?.substring(0, 10) + '...');
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -27,10 +23,20 @@ export default function Login() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.replace('../(tabs)/home');
-    } catch (error) {
+      router.replace('/(tabs)/home');
+    } catch (error: any) {
       console.error('Login error:', error);
-      Alert.alert('エラー', 'ログインに失敗しました。メールアドレスとパスワードを確認してください。');
+      let errorMessage = 'ログインに失敗しました。';
+      
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = 'メールアドレスまたはパスワードが正しくありません。';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'メールアドレスの形式が正しくありません。';
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = 'このアカウントは無効化されています。';
+      }
+      
+      Alert.alert('エラー', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -56,10 +62,20 @@ export default function Login() {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       Alert.alert('成功', 'アカウントが作成されました！');
-      router.replace('../(tabs)/home');
-    } catch (error) {
+      router.replace('/(tabs)/home');
+    } catch (error: any) {
       console.error('SignUp error:', error);
-      Alert.alert('エラー', 'アカウント作成に失敗しました。別のメールアドレスを試してください。');
+      let errorMessage = 'アカウント作成に失敗しました。';
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'このメールアドレスは既に使用されています。';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'メールアドレスの形式が正しくありません。';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'パスワードが弱すぎます。より強力なパスワードを使用してください。';
+      }
+      
+      Alert.alert('エラー', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +83,6 @@ export default function Login() {
 
   const toggleMode = () => {
     setIsSignUp(!isSignUp);
-    setEmail('ryuhosoy@yahoo.co.jp');
     setPassword('');
     setConfirmPassword('');
   };

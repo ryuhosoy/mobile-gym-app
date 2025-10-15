@@ -409,16 +409,20 @@ export default function GymDetailScreen() {
             </Text>
           </View>
         )}
-        <Text style={styles.sectionTitle}>トレーニング器具を追加</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="器具名を入力してください"
-          value={equipmentName}
-          onChangeText={setEquipmentName}
-        />
-        <TouchableOpacity style={styles.button} onPress={addEquipment}>
-          <Text style={styles.buttonText}>追加</Text>
-        </TouchableOpacity>
+        {auth.currentUser && (
+          <>
+            <Text style={styles.sectionTitle}>トレーニング器具を追加</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="器具名を入力してください"
+              value={equipmentName}
+              onChangeText={setEquipmentName}
+            />
+            <TouchableOpacity style={styles.button} onPress={addEquipment}>
+              <Text style={styles.buttonText}>追加</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         {equipmentList.length > 0 && (
           <>
@@ -487,24 +491,39 @@ export default function GymDetailScreen() {
           </View>
         ))}
 
-        {!userHasReview && (
+        {auth.currentUser ? (
+          !userHasReview && (
+            <View style={styles.reviewForm}>
+              <Text style={styles.sectionTitle}>レビューを投稿する</Text>
+              <StarRating
+                rating={newReview.rating}
+                totalReviews={5}
+                onRatingChange={(rating) => setNewReview({ ...newReview, rating })}
+              />
+              <TextInput
+                style={styles.reviewInput}
+                placeholder="コメントを入力してください"
+                value={newReview.comment}
+                onChangeText={(text) =>
+                  setNewReview({ ...newReview, comment: text })
+                }
+              />
+              <TouchableOpacity style={styles.button} onPress={submitReview}>
+                <Text style={styles.buttonText}>投稿する</Text>
+              </TouchableOpacity>
+            </View>
+          )
+        ) : (
           <View style={styles.reviewForm}>
             <Text style={styles.sectionTitle}>レビューを投稿する</Text>
-            <StarRating
-              rating={newReview.rating}
-              totalReviews={5}
-              onRatingChange={(rating) => setNewReview({ ...newReview, rating })}
-            />
-            <TextInput
-              style={styles.reviewInput}
-              placeholder="コメントを入力してください"
-              value={newReview.comment}
-              onChangeText={(text) =>
-                setNewReview({ ...newReview, comment: text })
-              }
-            />
-            <TouchableOpacity style={styles.button} onPress={submitReview}>
-              <Text style={styles.buttonText}>投稿する</Text>
+            <Text style={styles.loginRequiredText}>
+              レビューを投稿するにはログインが必要です
+            </Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => router.push('/auth/login')}
+            >
+              <Text style={styles.buttonText}>ログイン / 新規登録</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -637,6 +656,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 14,
     color: "#333",
+  },
+  loginRequiredText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginVertical: 15,
   },
   deleteButton: {
     color: "#FF0000",

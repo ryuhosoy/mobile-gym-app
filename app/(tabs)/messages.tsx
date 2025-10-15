@@ -63,6 +63,26 @@ export default function Messages() {
     </TouchableOpacity>
   );
 
+  if (!auth.currentUser) {
+    // 未ログイン時の表示
+    return (
+      <View style={styles.container}>
+        <View style={styles.notLoggedInContainer}>
+          <Text style={styles.notLoggedInTitle}>メッセージ</Text>
+          <Text style={styles.notLoggedInText}>
+            メッセージ機能を利用するにはログインが必要です
+          </Text>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push('/auth/login')}
+          >
+            <Text style={styles.loginButtonText}>ログイン / 新規登録</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -116,5 +136,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#999",
     alignSelf: 'flex-end',
+  },
+  notLoggedInContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  notLoggedInTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333',
+  },
+  notLoggedInText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  loginButton: {
+    backgroundColor: '#6B4DE6',
+    padding: 15,
+    borderRadius: 10,
+    width: '80%',
+  },
+  loginButtonText: {
+    color: '#FFF',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
