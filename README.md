@@ -1,10 +1,5 @@
 # 🏋️ ジム検索アプリ
 
-[![App Store](https://img.shields.io/badge/App%20Store-配信中-blue?style=for-the-badge&logo=app-store)](https://apps.apple.com/jp/app/your-app-id)
-[![Platform](https://img.shields.io/badge/Platform-iOS-lightgrey?style=for-the-badge&logo=apple)](https://www.apple.com/jp/ios/)
-[![React Native](https://img.shields.io/badge/React%20Native-0.81.4-61DAFB?style=for-the-badge&logo=react)](https://reactnative.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-
 現在地周辺のジムを検索し、レビューを共有できるモバイルアプリケーションです。React NativeとExpoで構築され、リアルタイムの位置情報ベース検索、ユーザーレビュー、チャット機能を搭載しています。
 
 ## 📲 ダウンロード
