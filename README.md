@@ -1,7 +1,32 @@
 # 🏋️ ジム検索アプリ
 
+[![App Store](https://img.shields.io/badge/App%20Store-配信中-blue?style=for-the-badge&logo=app-store)](https://apps.apple.com/jp/app/your-app-id)
+[![Platform](https://img.shields.io/badge/Platform-iOS-lightgrey?style=for-the-badge&logo=apple)](https://www.apple.com/jp/ios/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.81.4-61DAFB?style=for-the-badge&logo=react)](https://reactnative.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+
 現在地周辺のジムを検索し、レビューを共有できるモバイルアプリケーションです。React NativeとExpoで構築され、リアルタイムの位置情報ベース検索、ユーザーレビュー、チャット機能を搭載しています。
-App Storeにて「ジム検索アプリ」と検索するとインストールいただけます。
+
+## 📲 ダウンロード
+
+**🎉 App Store で配信中！**
+
+App Storeで「**ジム検索アプリ**」と検索するとインストールいただけます。
+
+または下記のリンクから直接ダウンロード：
+- 🍎 [App Storeでダウンロード](https://apps.apple.com/app/ジム検索アプリ/id6752111509) 
+  <!-- リリース後にApp Store URLに置き換えてください -->
+
+> **Note**: 現在iOS版のみ提供しています。Android版は準備中です。
+
+## 📸 スクリーンショット
+
+<!-- アプリのスクリーンショットをここに追加 -->
+<!-- 例: -->
+<!-- ![ホーム画面](./screenshots/home.png) -->
+<!-- ![ジム検索](./screenshots/search.png) -->
+<!-- ![ジム詳細](./screenshots/detail.png) -->
+<!-- ![レビュー](./screenshots/reviews.png) -->
 
 ## 📱 主な機能
 
@@ -235,20 +260,30 @@ eas secret:create --scope project --name EXPO_PUBLIC_GOOGLE_PLACES_API_KEY --val
 eas secret:create --scope project --name EXPO_PUBLIC_FIREBASE_API_KEY --value "あなたのキー"
 ```
 
-## 📱 App Store申請
+## 📱 App Store情報
 
-### iOS申請チェックリスト
+### リリース情報
+- **アプリ名**: ジム検索アプリ
+- **Bundle Identifier**: `com.ryuhosoy.gym-app`
+- **現在のバージョン**: `1.0.1`
+- **ステータス**: ✅ **配信中**
+- **対応OS**: iOS 13.0以降
+
+### App Storeでの検索方法
+1. App Storeアプリを開く
+2. 検索タブをタップ
+3. 「**ジム検索アプリ**」と入力
+4. アプリをダウンロード
+
+### 審査通過済みチェックリスト
 - [x] Bundle Identifier: `com.ryuhosoy.gym-app`
 - [x] プライバシーポリシー（位置情報使用説明）
-- [x] アカウント削除機能
-- [x] コア機能でのログイン強制なし
-- [x] 適切なエラーハンドリング
+- [x] アカウント削除機能（Guideline 5.1.1(v)準拠）
+- [x] コア機能でのログイン強制なし（Guideline 5.1.1準拠）
+- [x] 適切なエラーハンドリング（Guideline 2.1準拠）
 - [x] スクリーンショット準備（必要サイズ）
 - [x] アプリアイコン（1024x1024）
-
-### バージョン管理
-- Version: `1.0.1`
-- Build Number: 自動インクリメント有効
+- [x] App Store審査承認
 
 ## 🐛 トラブルシューティング
 
@@ -311,9 +346,9 @@ npx expo prebuild --clean
 ## 📊 プロジェクトステータス
 
 - ✅ 開発: 完了
-- ✅ テスト: 進行中
-- 🔄 App Store審査: 保留中
-- ⏳ 本番リリース: 近日公開
+- ✅ テスト: 完了
+- ✅ App Store審査: 承認済み
+- 🚀 本番リリース: **配信中**（App Storeで「ジム検索アプリ」で検索）
 
 ## 🔮 今後の機能拡張
 
